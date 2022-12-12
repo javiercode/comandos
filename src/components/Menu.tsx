@@ -36,7 +36,7 @@ const aMenu = [
         'url': RouterPathEnum.USUARIOS,
       },
       {
-        'title': 'Apuesta',
+        'title': 'Comandos',
         'code': 2,
         'icon': <MapIcon style={{color:Color.secondary}} />,
         'parent': 0,

@@ -44,7 +44,7 @@ function Home() {
 
       <Grid container component="main" justifyContent={'space-between'} >
         <Typography variant="h4" component="h4">
-          APUESTAS
+          COMANDOS
         </Typography>
         <FormCreate />
       </Grid>

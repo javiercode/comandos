@@ -11,6 +11,8 @@ import Alert from "@mui/material/Alert";
 import FormControl from "@mui/material/FormControl";
 import Box from '@mui/material/Box';
 
+// import useFileUpload from 'react-use-file-upload';
+
 import {
     postService,
 } from "../../service/index.service";
@@ -58,6 +60,7 @@ const FormCreate: React.FC<IFormCreateProps> = ({ getList }) => {
     const [errorApi, setErrorApi] = React.useState<string>("");
     const [showMsgApi, setShowMsgApi] = React.useState<boolean>(false);
     const [createDto, setCreateDto] = React.useState<IComandoCreate>(initDto);
+    const [file, setFile] = React.useState(null);
 
     const [nombreError, setNombreError] = React.useState<string>("");
     const [telefono1Error, setTelefono1Error] = React.useState<string>("");
@@ -169,8 +172,48 @@ const FormCreate: React.FC<IFormCreateProps> = ({ getList }) => {
 
 
 
-    const handleFiles = (files:any[]) => {
-        console.log(files)
+    const handleFiles = (files:any) => {
+        console.log("file",files[0])
+        const oFile = files[0];
+        const formData = new FormData();
+        // Update the formData object
+        formData.append(
+            "myFile",
+            oFile,
+            oFile.name
+            );
+            // Details of the uploaded file
+            // console.log(this.state.selectedFile);
+        console.log("formData",formData);
+        let fileReader = new FileReader();
+        fileReader.readAsDataURL(oFile)
+        
+        console.log("fileReader",fileReader);
+        console.log("fileReader",fileReader.DONE);
+        console.log("fileReader",fileReader.readyState);
+        
+        var reader = new FileReader();
+        reader.onload = function(event:any) {
+          // The file's text will be printed here
+          const fileBin = event.target.result;
+          console.log("fileBin",fileBin);
+          const buffer = Buffer.from(fileBin).toString('base64');
+          console.log("buffer", buffer);
+          
+        };
+      
+        reader.readAsBinaryString(oFile);
+        console.log("readAsBinaryString",reader);
+ 
+        reader.readAsText(oFile);
+        console.log("readAsText",reader);
+      
+        reader.readAsDataURL(oFile);
+        console.log("readAsDataURL",reader);
+             
+        reader.readAsArrayBuffer(oFile);
+        console.log("readAsArrayBuffer",reader);
+      
     }
 
     return (
@@ -198,25 +241,25 @@ const FormCreate: React.FC<IFormCreateProps> = ({ getList }) => {
                             {errorApi}
                         </Alert>
                     <Box sx={{ display: 'flex', flexWrap: 'wrap' }} key={'cliente-formcreate-dialog-box'}>
-                        <FormControl fullWidth sx={{ m: 1 }} key={'cliente-formcreate-dialog-formcontrol'}>
+                        <FormControl fullWidth sx={{ m: 1 }} key={'cliente-formcreate-dialog-formcontrol-detalle'}>
                             <TextField
                                 label="Detalle"
                                 onChange={(e) => onChangeInput(e, "detalle")}
                                 helperText={nombreError}
                                 error={nombreError !== ""}
-                                key={'cliente-formcreate-dialog-formcontrol-nombre'}
+                                key={'cliente-formcreate-dialog-formcontrol-input-detalle'}
                             />
                         </FormControl>
-                        <FormControl fullWidth sx={{ m: 1 }} key={'cliente-formcreate-dialog-formcontrol'}>
+                        <FormControl fullWidth sx={{ m: 1 }} key={'cliente-formcreate-dialog-formcontrol-tipo'}>
                             <TextField
                                 label="Categoria"
                                 onChange={(e) => onChangeInput(e, "tipo")}
                                 helperText={nombreError}
                                 error={nombreError !== ""}
-                                key={'cliente-formcreate-dialog-formcontrol-tipo'}
+                                key={'cliente-formcreate-dialog-formcontrol-input-tipo'}
                             />
                         </FormControl>
-                        <TextField
+                         <TextField
                             label="Sonido"
                             sx={{ m: 1, width: '26ch' }}
                             onChange={(e) => onChangeInput(e, "sonido")}
@@ -225,6 +268,7 @@ const FormCreate: React.FC<IFormCreateProps> = ({ getList }) => {
                             type="file"
                             key={'cliente-formcreate-dialog-formcontrol-sonido'}
                         />
+                        {/*
                         <TextField
                             label="Imagen"
                             sx={{ m: 1, width: '26ch' }}
@@ -233,11 +277,22 @@ const FormCreate: React.FC<IFormCreateProps> = ({ getList }) => {
                             error={telefono1Error !== ""}
                             type="file"
                             key={'cliente-formcreate-dialog-formcontrol-imagen'}
-                        />
+                        /> */}
                         <FormControl>
-                        <ReactFileReader handleFiles={handleFiles}>
-                            <button className='btn'>Upload</button>
-                        </ReactFileReader>
+
+                        </FormControl>
+                        <FormControl>
+                            <Button
+                            variant="contained"
+                            component="label"
+                            >
+                            Upload File
+                            <input
+                                type="file"
+                                hidden
+                                onChange={e=> handleFiles(e.target.files)}
+                            />
+                            </Button>
                         </FormControl>
                                                 
                     </Box>
