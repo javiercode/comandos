@@ -35,10 +35,10 @@ interface IFormCreateProps {
 }
 
 let initDto: IComandoCreate = {
-    detalle:"",
-    tipo:"",
-    sonido:"",
-    imagen:""
+    detalle: "",
+    tipo: "",
+    sonido: "",
+    imagen: ""
 };
 
 let regexError: typeFormError = {
@@ -60,7 +60,8 @@ const FormCreate: React.FC<IFormCreateProps> = ({ getList }) => {
     const [errorApi, setErrorApi] = React.useState<string>("");
     const [showMsgApi, setShowMsgApi] = React.useState<boolean>(false);
     const [createDto, setCreateDto] = React.useState<IComandoCreate>(initDto);
-    const [file, setFile] = React.useState(null);
+    const [imagen, setImagen] = React.useState<string>("Subir Imagen");
+    const [sonido, setSonido] = React.useState<string>("Subir Sonido");
 
     const [nombreError, setNombreError] = React.useState<string>("");
     const [telefono1Error, setTelefono1Error] = React.useState<string>("");
@@ -108,7 +109,7 @@ const FormCreate: React.FC<IFormCreateProps> = ({ getList }) => {
             onChangeInput({ 'target': { 'name': key, 'value': createDto[key as keyof IComandoCreate] } }, key)
         });
         */
-        if (createDto.detalle !== "" && createDto.tipo !== "" ) {
+        if (createDto.detalle !== "" && createDto.tipo !== "") {
             createDto.tipo = createDto.tipo.toLocaleUpperCase();
             createDto.detalle = createDto.detalle.toLocaleUpperCase();
             postService("/comando/create", createDto).then((result) => {
@@ -126,36 +127,36 @@ const FormCreate: React.FC<IFormCreateProps> = ({ getList }) => {
     };
 
 
-    const onChangeInput = (event: any, input: string) => {
+    const onChangeInput = async(event: any, input: string) => {
         let dto = createDto;
-        let { value } = event.target;
-        if(input == "imagen" || input =="sonido"){
-            console.log(value)
-            console.log("value",event.target)
-            value = Buffer.from(value).toString('base64')
-            console.log("value",value)
-            const file = event.target.files[0];
-    //const base64 = await convertBase64(file);
-        }else{
-            dto[input as keyof IComandoCreate] = value;
-            setCreateDto(dto);
-        }
-
-        
-/*
-        let regex = new RegExp(regexError[input as keyof typeFormError]);
-        if (regex.test(value)) {
-            dto[input as keyof IComandoCreate] = value;
-            setCreateDto(dto);
-            tFormError[input as keyof typeSetError]("")
-        } else {
-            if(value.length ==0){
-                tFormError[input as keyof typeSetError]("Campo "+input+" requerido!")
+        let { value,files } = event.target;
+        if (input == "imagen" || input == "sonido") {
+            value = await getBuffer64(files)
+            if(input=="imagen"){
+                setImagen(files[0].name)
             }else{
-                tFormError[input as keyof typeSetError](textControl[input as keyof typeSetError])
+                setSonido(files[0].name)
             }
-        }
-        */
+        } 
+        dto[input as keyof IComandoCreate] = value;
+        setCreateDto(dto);
+        console.log("dto",dto)
+
+
+        /*
+                let regex = new RegExp(regexError[input as keyof typeFormError]);
+                if (regex.test(value)) {
+                    dto[input as keyof IComandoCreate] = value;
+                    setCreateDto(dto);
+                    tFormError[input as keyof typeSetError]("")
+                } else {
+                    if(value.length ==0){
+                        tFormError[input as keyof typeSetError]("Campo "+input+" requerido!")
+                    }else{
+                        tFormError[input as keyof typeSetError](textControl[input as keyof typeSetError])
+                    }
+                }
+                */
     };
 
     const handleClose = () => {
@@ -163,57 +164,27 @@ const FormCreate: React.FC<IFormCreateProps> = ({ getList }) => {
     };
 
     const handleClickOpen = () => {
-
         setCreateDto(initDto);
         setOpen(true);
         setErrorApi("");
         setShowMsgApi(false);
     };
 
+    const readFileAsync = (file: any):Promise<string|ArrayBuffer|null> => {
+        return new Promise((resolve, reject) => {
+            let reader = new FileReader();
+            reader.onload = () => {
+                resolve(reader.result);
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        })
+    }
 
-
-    const handleFiles = (files:any) => {
-        console.log("file",files[0])
+    const getBuffer64 = async (files: any):Promise<string> => {
         const oFile = files[0];
-        const formData = new FormData();
-        // Update the formData object
-        formData.append(
-            "myFile",
-            oFile,
-            oFile.name
-            );
-            // Details of the uploaded file
-            // console.log(this.state.selectedFile);
-        console.log("formData",formData);
-        let fileReader = new FileReader();
-        fileReader.readAsDataURL(oFile)
-        
-        console.log("fileReader",fileReader);
-        console.log("fileReader",fileReader.DONE);
-        console.log("fileReader",fileReader.readyState);
-        
-        var reader = new FileReader();
-        reader.onload = function(event:any) {
-          // The file's text will be printed here
-          const fileBin = event.target.result;
-          console.log("fileBin",fileBin);
-          const buffer = Buffer.from(fileBin).toString('base64');
-          console.log("buffer", buffer);
-          
-        };
-      
-        reader.readAsBinaryString(oFile);
-        console.log("readAsBinaryString",reader);
- 
-        reader.readAsText(oFile);
-        console.log("readAsText",reader);
-      
-        reader.readAsDataURL(oFile);
-        console.log("readAsDataURL",reader);
-             
-        reader.readAsArrayBuffer(oFile);
-        console.log("readAsArrayBuffer",reader);
-      
+        let contentBuffer = await readFileAsync(oFile);
+        return contentBuffer?.toString() || "";
     }
 
     return (
@@ -233,13 +204,13 @@ const FormCreate: React.FC<IFormCreateProps> = ({ getList }) => {
                         Registrar todos los campos
                     </DialogContentText>
                     <Alert
-                            variant="outlined"
-                            severity="error"
-                            style={{ display: showMsgApi ? "block" : "none" }}
-                            key={'cliente-formcreate-dialog-alert'}
-                        >
-                            {errorApi}
-                        </Alert>
+                        variant="outlined"
+                        severity="error"
+                        style={{ display: showMsgApi ? "block" : "none" }}
+                        key={'cliente-formcreate-dialog-alert'}
+                    >
+                        {errorApi}
+                    </Alert>
                     <Box sx={{ display: 'flex', flexWrap: 'wrap' }} key={'cliente-formcreate-dialog-box'}>
                         <FormControl fullWidth sx={{ m: 1 }} key={'cliente-formcreate-dialog-formcontrol-detalle'}>
                             <TextField
@@ -259,42 +230,39 @@ const FormCreate: React.FC<IFormCreateProps> = ({ getList }) => {
                                 key={'cliente-formcreate-dialog-formcontrol-input-tipo'}
                             />
                         </FormControl>
-                         <TextField
-                            label="Sonido"
-                            sx={{ m: 1, width: '26ch' }}
-                            onChange={(e) => onChangeInput(e, "sonido")}
-                            helperText={telefono1Error}
-                            error={telefono1Error !== ""}
-                            type="file"
-                            key={'cliente-formcreate-dialog-formcontrol-sonido'}
-                        />
-                        {/*
-                        <TextField
-                            label="Imagen"
-                            sx={{ m: 1, width: '26ch' }}
-                            onChange={(e) => onChangeInput(e, "imagen")}
-                            helperText={telefono1Error}
-                            error={telefono1Error !== ""}
-                            type="file"
-                            key={'cliente-formcreate-dialog-formcontrol-imagen'}
-                        /> */}
                         <FormControl>
 
                         </FormControl>
                         <FormControl>
                             <Button
-                            variant="contained"
-                            component="label"
+                                variant="contained"
+                                component="label"
                             >
-                            Upload File
-                            <input
-                                type="file"
-                                hidden
-                                onChange={e=> handleFiles(e.target.files)}
-                            />
+                                {sonido}
+                                <input
+                                    type="file"
+                                    hidden
+                                    accept=".mp3,audio/*"
+                                    onChange={e => onChangeInput(e, "sonido")}
+                                />
                             </Button>
                         </FormControl>
-                                                
+
+                        <FormControl>
+                            <Button
+                                variant="contained"
+                                component="label"
+                            >
+                                {imagen}
+                                <input
+                                    type="file"
+                                    hidden
+                                    accept="image/png, image/gif, image/jpeg"
+                                    onChange={e => onChangeInput(e,"imagen")}
+                                />
+                            </Button>
+                        </FormControl>
+
                     </Box>
 
                 </DialogContent>
