@@ -112,6 +112,9 @@ const FormCreate: React.FC<IFormCreateProps> = ({ getList }) => {
         if (createDto.detalle !== "" && createDto.tipo !== "") {
             createDto.tipo = createDto.tipo.toLocaleUpperCase();
             createDto.detalle = createDto.detalle.toLocaleUpperCase();
+            createDto.sonido = JSON.stringify(createDto.sonido);
+            createDto.imagen = JSON.stringify(createDto.imagen);
+            console.log("createDto",createDto)
             postService("/comando/create", createDto).then((result) => {
                 setErrorApi(result.success ? "" : result.message);
                 setShowMsgApi(!result.success);
